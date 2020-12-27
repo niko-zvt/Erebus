@@ -3,23 +3,8 @@
 ;; ASM game "Rock, Papper & Scissors" to the console using only.
 ;; Runs on 32-bit and 64-bit Linux only.
 ;;
-;; Copyright (c) Nikolay Zhivotenko, 2020
-;;
-;; I, the author, hereby grant everyone the right to use this file for any
-;; purpose, in any manner, in it's original or modified form, provided that
-;; modified versions are clearly marked as such AND the original author's
-;; copyright notice is kept along with the other authors' copyright notices
-;; as appropriate within the file.
-;;
-;; Only the file as such must retain the copyright notice. Programs created
-;; using this file (e.g. binaries) don't need to have any mentions of the fact
-;; this file was used to create them.
-;; 
-;; This file is provided as is, with absolutely NO WARRANTY, and this
-;; statement must be taken literally: "NO" means "NO", period. Should
-;; this needs additional clarifications, I'd like you to search Internet
-;; for various types of warranty (e.g., implied, hidden, etc) and take
-;; into account that you don't have them all.
+;; Copyright (c) Nikolay V. Zhivotenko, 2020
+;; niko.zvt@gmail.com
 ;;
 ;; To assemble and run:
 ;;
