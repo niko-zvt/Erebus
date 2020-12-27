@@ -20,9 +20,12 @@ sudo chmod +x gRPS                  # Change mode
 - Free assembler compiler `nasm` for the Intel x86 architecture.
 - Free executable file linker `ld`. 
 
-##### Remark
+##### Remark about Windows Subsystem for Linux
 You can compile, link, and execute this game under `Windows Subsystem for Linux`.
-It is important to know that WSL 1 doesn't support 32-bit ELF. It seems that since the UserVoice was raised, there is no progress - and will not be. If you are a lucky owner of WSL 2 (or are ready to upgrade to the next version) you can launch the app. If you are having problems updating the WSL version, be sure to read this discussion on GitHub, most likely you will solve your problem.
+- It is important to know that WSL 1 doesn't support 32-bit ELF. It seems that since the UserVoice was raised, there is no progress - and will not be. 
+- If you are a lucky owner of WSL 2 (or are ready to upgrade to the next version) you can execute the app. 
+
+*If you are having problems updating the WSL version, be sure to read this [discussion on GitHub](https://github.com/microsoft/WSL/issues/5014), most likely you will solve your problem.*
 
 ##### License
 I have made this game available for you under the [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt). Feel free to remix and re-share this game.
