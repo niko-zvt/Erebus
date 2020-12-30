@@ -109,6 +109,19 @@
 %endmacro
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%macro	PRINTFIGS 2
+	pusha
+	pushf
+	PUTCHAR [%1]
+	PUTCHAR [%1+1]
+	PRINT	" vs "
+	PUTCHAR [%2]
+	PUTCHAR [%2+1]
+	popf
+	popa
+%endmacro
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 %macro	PUTCHAR 1
 	pusha
 	pushf
