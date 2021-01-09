@@ -3,6 +3,9 @@
 !*.*
 *.bin
 *.o
+*.exe
+*.err
+*.out
 *~
 \#*
 !LICENSE
