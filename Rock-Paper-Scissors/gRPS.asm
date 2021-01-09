@@ -1,6 +1,6 @@
 ;; ========================================================================================
 ;;
-;; ASM game "Rock, Papper & Scissors" to the console using only.
+;; ASM game "Rock, Paper & Scissors" to the console using only.
 ;; Runs on 32-bit and 64-bit Linux only.
 ;;
 ;; Copyright (c) Nikolay V. Zhivotenko, 2020
@@ -35,7 +35,7 @@ global      _start
 ;; ----------------------------------------------
 section     .text
 
-            ;; Entry point                                                 
+;; Entry point                                                 
 _start:     PRINT       "Hello, *USERNAME*! "                       ;; Macro for displaying the greeting line
             PRINT       "This is a Rock, Paper & Scissors ASM game!";; Macro for displaying the greeting line
             PUTCHAR     10                                          ;; Macro for displaying a newline character (LF/0x0A/10)
@@ -48,6 +48,8 @@ _start:     PRINT       "Hello, *USERNAME*! "                       ;; Macro for
             PUTCHAR     10                                          ;; LF
             PRINT       "How many rounds do you want to play? "     ;; Macro for displaying a prompt to enter the number of rounds
             PRINT       "Please enter a number from 1 to 9: "       ;; Macro for displaying a prompt to enter the number of rounds
+
+;; Human starts the input the number of rounds
 inputRnds:  GETCHAR                                                 ;; Macro for entering an ASCII character in the EAX register
             mov         [numRnds],  eax                             ;; Moving the entered character from EAX to a variable
 
@@ -88,12 +90,12 @@ inputRnds:  GETCHAR                                                 ;; Macro for
             PRINT       "       'Q' or 'q' - To quit."              ;; Print text
             PUTCHAR     10                                          ;; LF
 
-            ;; The main game loop 
+;; The main game loop 
 main_loop:  push        ecx                                         ;; Save the counter in the stack
-
-            ;; Input figure (Human choice)
             PUTCHAR     10                                          ;; LF
-            PRINT       "Your choice: "                              ;; Print the invitation to enter
+            PRINT       "Your choice: "                             ;; Print the invitation to enter
+
+;; Human starts the input the shape
 inputHuman: GETCHAR                                                 ;; Get human choice
             mov         [plrHuman],  eax                            ;; Moving the entered character from EAX to a variable
 
@@ -131,21 +133,31 @@ inputHuman: GETCHAR                                                 ;; Get human
 
             jmp         inputHuman                                  ;; Otherwise, we always return to re-enter
 
-choiceP:    mov         eax,        1                               ;; Save Human choice to variable
+;; Human chose paper as his shape
+choiceP:    mov         eax,        [shapePaper]                    ;; Adding the right shape to the register EAX
+            mov         [shapeR],   eax                             ;; Move shape from EAX to variable
+            mov         eax,        1                               ;; Save Human choice to variable
             mov         [plrHuman], eax                             ;; Save Human choice to variable
             jmp         choicePC                                    ;; Continue game
 
-choiceS:    mov         eax,        2                               ;; Save Human choice to variable
+;; Human chose scissors as his shape
+choiceS:    mov         eax,        [shapeRightScissors]            ;; Adding the right shape to the register EAX
+            mov         [shapeR],   eax                             ;; Move shape from EAX to variable
+            mov         eax,        2                               ;; Save Human choice to variable
             mov         [plrHuman], eax                             ;; Save Human choice to variable
             jmp         choicePC                                    ;; Continue game
 
-choiceR:    mov         eax,        3                               ;; Save Human choice to variable
+;; Human chose rock as his shape
+choiceR:    mov         eax,        [shapeRightRock]                ;; Adding the right shape to the register EAX
+            mov         [shapeR],   eax                             ;; Move shape from EAX to variable
+            mov         eax,        3                               ;; Save Human choice to variable
             mov         [plrHuman], eax                             ;; Save Human choice to variable
             jmp         choicePC                                    ;; Continue game
 
-            ;; Continue game
-choicePC:   PUTCHAR     10                                          ;; LF
+            PUTCHAR     10                                          ;; LF
 
+;; PC starts the input the shape            
+choicePC:
             ;; Generate random number (PC choice)
             rdtsc                                                   ;; Quasirandom -> EDX:EAX
             xor         edx,        edx                             ;; Required because there's no division of EAX solely
@@ -155,55 +167,131 @@ choicePC:   PUTCHAR     10                                          ;; LF
             add         eax,        1                               ;; Shift -> EAX = [1, 3]
             mov         [plrPC],    eax                             ;; Save PC choice to variable
 
-            ;; In the game, there are 2 situations where a person has chosen Scissors or something else
+            ;; In the game, there are 3 situations where a person has chosen Scissors, Paper or Rock
             mov         edx,        2                               ;; Scissors ID -> EDX
             cmp         edx,        [plrHuman]                      ;; If EDX == [plrHuman]
-            je          situationA                                  ;; If Human use Scissors - jump to lable situationA                                      
-            jmp         situationB                                  ;; If Human use Paper or Rock - jump to lable situationB
+            je          situationS                                  ;; If Human use Scissors - jump to lable "situationS"  
+            jg          situationP                                  ;; If Human use Paper - jump to lable "situationP" 
+            jl          situationR                                  ;; If Human use Rock - jump to lable "situationR" 
+            
+            ;; Let's hope it doesn't come to that
+            jmp         checkLoop                                   ;; Jump to label "checkLoop"
 
-            ;; Handling a situation where the user has selected a Scissors
-situationA: mov         eax,        2                               ;; Scissors ID -> EDX            
+;; Handling a situation where the user has selected a Scissors
+situationS: mov         edx,        2                               ;; Scissors ID -> EDX            
             cmp         edx,        [plrPC]                         ;; If EDX == [plrPC]
-            je          draw                                        ;; Draw            
-            jg          fail                                        ;; Human Fail
-            jl          win                                         ;; Human Win
-            jmp         continue
 
-            ;; Handling a situation where the user has selected a Rock or Paper
-situationB: PRINT       "TODO"
-            jmp         continue
+            ;; Draw
+            mov         ebx,        [shapeLeftScissors]             ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable
+            je          draw                                        ;; Draw, EDX == [plrPC]       
 
-            ;; Play a draw
-draw:       PRINT       "8< vs >8"
-            PRINT       "       - Play a DRAW! (Scissors vs Scissors)"
-            mov         eax,        [numDraw]
-            inc         eax
-            mov         [numDraw],  eax
-            jmp         continue
+            ;; Human Fail
+            mov         ebx,        [shapeLeftRock]                 ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable     
+            jg          fail                                        ;; Human Fail, EDX < [plrPC]
 
-            ;; Fail
-fail:       PRINT       "8< vs 0 "
-            PRINT       "       - You LOSE! (Scissors vs Rock)"
-            mov         eax,        [numLose]
-            inc         eax
-            mov         [numLose],  eax
-            jmp         continue
+            ;; Human Win
+            mov         ebx,        [shapePaper]                    ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable
+            jl          win                                         ;; Human Win, EDX > [plcPC]
 
-            ;; Win
-win:        PRINT       "8< vs ##"
-            PRINT       "       - You WIN! (Scissors vs Paper)"
-            mov         eax,        [numWins]
-            inc         eax
-            mov         [numWins],  eax
-            jmp         continue
+            ;; Let's hope it doesn't come to that
+            jmp         checkLoop                                   ;; Jump to label "checkLoop"
 
-continue:   PUTCHAR     10                                          ;; LF
+;; Handling a situation where the user has selected a Paper
+situationP: mov         edx,        2                               ;; Scissors ID -> EDX  
+            cmp         edx,        [plrPC]                         ;; If EDX == [plrPC]
+
+            ;; Human Fail
+            mov         ebx,        [shapeLeftScissors]             ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable
+            je          fail                                        ;; EDX == 2 == Scissors
+                                                                    ;; [plrPC] == 2 == Scissors
+                                                                    ;; [plrHuman] == 1 == Paper
+                                                                    ;; Paper < Scissors
+
+            ;; Draw
+            mov         ebx,        [shapePaper]                    ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable
+            jg          draw                                        ;; EDX == 2 == Scissors
+                                                                    ;; [plrPC] == 1 == Paper
+                                                                    ;; [plrHuman] == 1 == Paper
+                                                                    ;; Paper == Paper
+            ;; Human Win
+            mov         ebx,        [shapeLeftRock]                 ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable
+            jl          win                                         ;; EDX == 2 == Scissors
+                                                                    ;; [plrPC] == 3 == Rock
+                                                                    ;; [plrHuman] == 1 == Paper
+                                                                    ;; Paper > Rock      
+
+            ;; Let's hope it doesn't come to that
+            jmp         checkLoop                                   ;; Else check loop
+
+;; Handling a situation where the user has selected a Rock
+situationR: mov         edx,        2                               ;; Scissors ID -> EDX  
+            cmp         edx,        [plrPC]                         ;; If EDX == [plrPC]
+
+            ;; Human win
+            mov         ebx,        [shapeLeftScissors]             ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable
+            je          win                                         ;; EDX == 2 == Scissors
+                                                                    ;; [plrPC] == 2 == Scissors
+                                                                    ;; [plrHuman] == 3 == Rock
+                                                                    ;; Rock > Scissors
+
+            ;; Human Fail
+            mov         ebx,        [shapePaper]                    ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable
+            jg          fail                                        ;; EDX == 2 == Scissors
+                                                                    ;; [plrPC] == 1 == Paper
+                                                                    ;; [plrHuman] == 3 == Rock
+                                                                    ;; Rock < Paper
+
+            ;; Draw
+            mov         ebx,        [shapeLeftRock]                 ;; Adding the left shape to the register EBX
+            mov         [shapeL],   ebx                             ;; Move shape from EBX to variable
+            jl          draw                                        ;; EDX == 2 == Scissors
+                                                                    ;; [plrPC] == 3 == Rock
+                                                                    ;; [plrHuman] == 3 == Rock
+                                                                    ;; Rock == Rock      
+
+            ;; Let's hope it doesn't come to that
+            jmp         checkLoop                                   ;; Else check loop
+
+;; Play a draw
+draw:       PRINTFIGS   shapeR,    shapeL                           ;; Printing selected shapes
+            PRINT       "       - Play a DRAW!"                     ;; Printing a phrase
+            mov         eax,        [numDraw]                       ;; Moving the number of draws to the register
+            inc         eax                                         ;; Increase the value in the register by one
+            mov         [numDraw],  eax                             ;; Moving the new number of draws to the variable
+            jmp         checkLoop                                   ;; Jump to the loop check for the next iteration
+
+;; Fail
+fail:       PRINTFIGS   shapeR,    shapeL                           ;; Printing selected shapes
+            PRINT       "       - You LOSE!"                        ;; Printing a phrase
+            mov         eax,        [numLose]                       ;; Moving the number of fails to the register
+            inc         eax                                         ;; Increase the value in the register by one
+            mov         [numLose],  eax                             ;; Moving the new number of fails to the variable
+            jmp         checkLoop                                   ;; Jump to the loop check for the next iteration
+
+;; Win
+win:        PRINTFIGS   shapeR,    shapeL                           ;; Printing selected shapes
+            PRINT       "       - You WIN!"                         ;; Printing a phrase
+            mov         eax,        [numWins]                       ;; Moving the number of wins to the register
+            inc         eax                                         ;; Increase the value in the register by one
+            mov         [numWins],  eax                             ;; Moving the new number of wins to the variable
+            jmp         checkLoop                                   ;; Jump to the loop check for the next iteration
+
+;; Checking the iterator of the number of steps
+checkLoop:  PUTCHAR     10                                          ;; LF
             pop         ecx                                         ;; Load the counter from the stack
             inc         ecx                                         ;; Increasing the value of the ECX register (counter) by one
             cmp         ecx,        [numRnds]                       ;; Comparing the counter with the number of rounds
             jl          main_loop                                   ;; If ECX < [numRnds] jump to "main_loop" lable
 
-            ;; Show statistics
+;; Show statistics
 showStats:  PUTCHAR     10                                          ;; LF
             PRINT       "Statistics:"                               ;; Print statistics text
             PUTCHAR     10                                          ;; LF
@@ -231,7 +319,8 @@ showStats:  PUTCHAR     10                                          ;; LF
             PUTCHAR     10                                          ;; LF
             PUTCHAR     10                                          ;; LF
 
-terminate:  FINISH                                                  ;; Else process terminate
+;; Completing the process
+terminate:  FINISH                                                  ;; Terminate process
 
 ;; ----------------------------------------------
 ;; Section BSS
@@ -239,8 +328,21 @@ terminate:  FINISH                                                  ;; Else proc
 section     .bss
 
 numRnds:    resb        4                                           ;; Variable for storing the number of rounds
-plrHuman:   resb        4                                           ;; Variable for storing the human player figure
-plrPC:      resb        4                                           ;; Variable for storing the PC player figure
+plrHuman:   resb        4                                           ;; Variable for storing the human player shape
+plrPC:      resb        4                                           ;; Variable for storing the PC player shape
 numWins:    resb        4                                           ;; Variable for storing the number of wins
 numLose:    resb        4                                           ;; Variable for storing the number of losses
 numDraw:    resb        4                                           ;; Variable for storing the number of draws
+shapeR:     resb        4                                           ;; Variable for storing the right shape
+shapeL:     resb        4                                           ;; Variable for storing the left shape
+
+;; ----------------------------------------------
+;; Section DATA
+;; ----------------------------------------------
+section     .data
+
+shapeRightScissors:     db          "8<"                            ;;A string that represents the display of the right scissors
+shapeLeftScissors:      db          ">8"                            ;;A string that represents the display of the left scissors
+shapeRightRock:         db          "O "                            ;;A string that represents the display of the right rock
+shapeLeftRock:          db          " O"                            ;;A string that represents the display of the left rock
+shapePaper:             db          "##"                            ;;A string that represents the display of the paper
