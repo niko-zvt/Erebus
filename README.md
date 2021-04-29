@@ -1,4 +1,4 @@
-<img src="ErebusLogo.png" align="right" />
+﻿<img src="ErebusLogo.png" align="right" />
 
 # Erebus
 
@@ -11,3 +11,7 @@ This is a very simple console game for machines based on processors compatible w
 ### 0x01 - [Wirth's Chainlet](https://github.com/niko-zvt/Erebus/tree/main/Wirths-Chainlet)
 
 A terribly stupid implementation of a singly linked list using prehistoric Pascal. There's plenty of room to break everything or shoot yourself in the foot.
+
+### 0x02 - [Quadratic Entertainment](https://github.com/niko-zvt/Erebus/tree/main/Quadratic-Entertainment)
+
+Fun ​project for implementing assembler inserts in pure C. Another attempt to break something.
