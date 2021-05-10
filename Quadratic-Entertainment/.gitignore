@@ -62,5 +62,6 @@ dkms.conf
 
 # Settings
 .vscode/
+.vs/
 
 !LICENSE
