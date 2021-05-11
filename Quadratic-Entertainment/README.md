@@ -21,9 +21,11 @@ or see `Install.bat`
 ### Build tools
 For GNU/Linux:
 - [GNU Compiler Collection](https://gcc.gnu.org/) - `gcc`
+- [Netwide Assembler (NASM)](https://www.nasm.us/) for Linux - `nasm`
 
 For Windows:
 - [GCC for Windows 64 & 32 bits (mingw-w64)](http://mingw-w64.org/) - `gcc`
+- [Netwide Assembler (NASM)](https://www.nasm.us/) for Windows x64 - `nasm`
 
 ### License
 I have made this program available for you under the [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt). Feel free to remix and re-share this program.

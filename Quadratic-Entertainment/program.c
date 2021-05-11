@@ -29,9 +29,13 @@
 main()
 {
     /* Initializing the main parameters */
+    const bool printRoots = true;
     const unsigned int countCoeffs = 3;
     const float tolerance = 0.001;
     float coeffArray[countCoeffs];
+
+    /* Print intro */
+    PrintIntro();
 
     /* User input */
     Result result = InputCoefficients(coeffArray, countCoeffs);
@@ -44,7 +48,7 @@ main()
         CloseProgram(result);
 
     /* Solving the equation */
-    result = SolveEquation(coeffArray, countCoeffs, tolerance);
+    result = SolveEquation(coeffArray, countCoeffs, tolerance, printRoots);
     if(result != SUCCESS)
         CloseProgram(result);
 
@@ -142,7 +146,14 @@ PrintEquation(float coeff[], const int len)
             number = coeff[i];
         }
 
-        printf(" %c ", sign);
+        if(i == 0)
+        {
+            printf("%c ", sign);
+        }
+        else
+        {
+            printf(" %c ", sign);
+        }
         printf("%.2f * x^%d", number, (len - 1) - i);
     }
 
@@ -156,9 +167,31 @@ PrintEquation(float coeff[], const int len)
  * Function for printing the equation roots
  */ 
  Result /* SUCCESS */
-PrintRoots(float roots[], const bool isComplex)
+PrintRoots(const float roots[], const bool isLinear, const bool isComplex, const float tolerance)
 {
-    // TODO: Implementation
+    float root_one = roots[0];
+    float root_two = roots[1];
+
+    if(isLinear)
+    {
+        /* If equation is linear */
+        printf("Root is:\n");
+        printf("\tOnly one root = %.2f\n", root_one);
+        return SUCCESS;
+    }
+
+    printf("Roots is:\n");
+    if(!isComplex)
+    {
+        /* If roots is not complex */
+        printf("\tFirst root  = %.2f\n", root_one);
+        printf("\tSecond root = %.2f\n", root_two);
+        return SUCCESS;
+    }
+    
+    /* If roots is complex */
+    printf("\tFirst root  = %.2f + %.2fi\n", root_one, root_two);
+    printf("\tSecond root = %.2f - %.2fi\n", root_one, root_two);
     return SUCCESS;
 }
 
@@ -166,7 +199,7 @@ PrintRoots(float roots[], const bool isComplex)
  * Function for solving an equation from an array of coefficients
  */
  Result /* SUCCESS or any ERROR_CALC */
-SolveEquation(float coeff[], const int len, const float linearTolerance)
+SolveEquation(float coeff[], const int len, const float linearTolerance, const bool printRoots)
 {
     /* Result */
     Result result = ERROR_CALC;
@@ -187,13 +220,18 @@ SolveEquation(float coeff[], const int len, const float linearTolerance)
     /* If the coefficient for the quadratic term is zero
        (according to the specified tolerance)
        then solve the linear equation */
+    bool isLinear = false;
     if(A <= linearTolerance)
+        isLinear = true;
+
+    if(isLinear)
         result = SolveLinearEquation(B, C, roots);
     else
         result = SolveQuadraticEquation(A, B, C, roots, &isComplex);
 
     /* Print roots of the equation */
-    PrintRoots(roots, isComplex);
+    if(printRoots)
+        PrintRoots(roots, isLinear, isComplex, linearTolerance);
 
     /* Return result */
     return result;
@@ -263,6 +301,15 @@ PressAnyKey()
 #else
 #error Platform not supported
 #endif
+}
+
+/* 
+ * The function outputs information about the program
+ */
+ void /* NULL */
+PrintIntro()
+{
+    // TODO: Print intro
 }
 
 /*

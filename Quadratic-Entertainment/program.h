@@ -25,10 +25,10 @@ Result CheckErrors(const unsigned int [], const int, const bool);
 Result PrintEquation(float [], const int);
 
 /* Function for printing the equation roots */
-Result PrintRoots(float [], const bool);
+Result PrintRoots(const float [], const bool, const bool, const float);
 
 /* Function for solving an equation from an array of coefficients */
-Result SolveEquation(float [], const int, const float);
+Result SolveEquation(float [], const int, const float, const bool);
 
 /* Function for solving linear equation */
 Result SolveLinearEquation(const float, const float, float []);
