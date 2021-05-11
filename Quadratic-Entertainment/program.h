@@ -1,3 +1,8 @@
+// ====================================================================================
+// Quadratic (Entertainment) Equation
+// Shameless assembler in C. Just needs more speed.
+// ====================================================================================
+
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
