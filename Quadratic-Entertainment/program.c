@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <math.h>
 #include "program.h"
 
 /* Platform-dependent header file */
@@ -76,14 +77,13 @@ InputCoefficients(float array[], const int len)
     {
         printf("Enter coefficient %c: ", i + charOffset);
         results[i] = scanf("%f", &(array[i])); 
-        printf("Coefficient %c = %.2f\n", i + charOffset, array[i]);
-        printf("\n");
 
         /* If the input stream contains several digits
            or less than one, abort the input */
         if(results[i] != 1)
            break;
     }
+    printf("\n");
 
     /* Returning input results after error checking */
     return CheckErrors(results, len, true);
@@ -130,6 +130,8 @@ PrintEquation(float coeff[], const int len)
     /* Printing an equation with the signs taken into account */
     const float zero = 0.0f;
     
+    printf("Equation:\n");
+
     for(int i = 0; i < len; ++i)
     {
         float number = zero;
@@ -148,7 +150,7 @@ PrintEquation(float coeff[], const int len)
 
         if(i == 0)
         {
-            printf("%c ", sign);
+            printf("\t%c ", sign);
         }
         else
         {
@@ -175,23 +177,24 @@ PrintRoots(const float roots[], const bool isLinear, const bool isComplex, const
     if(isLinear)
     {
         /* If equation is linear */
-        printf("Root is:\n");
-        printf("\tOnly one root = %.2f\n", root_one);
+        printf("Root is real:\n");
+        printf("\tOnly one root = %.2f\n\n", root_one);
         return SUCCESS;
     }
 
-    printf("Roots is:\n");
     if(!isComplex)
     {
         /* If roots is not complex */
+        printf("Roots is real:\n");
         printf("\tFirst root  = %.2f\n", root_one);
-        printf("\tSecond root = %.2f\n", root_two);
+        printf("\tSecond root = %.2f\n\n", root_two);
         return SUCCESS;
     }
     
     /* If roots is complex */
+    printf("Roots is complex:\n");
     printf("\tFirst root  = %.2f + %.2fi\n", root_one, root_two);
-    printf("\tSecond root = %.2f - %.2fi\n", root_one, root_two);
+    printf("\tSecond root = %.2f - %.2fi\n\n", root_one, root_two);
     return SUCCESS;
 }
 
@@ -221,16 +224,16 @@ SolveEquation(float coeff[], const int len, const float linearTolerance, const b
        (according to the specified tolerance)
        then solve the linear equation */
     bool isLinear = false;
-    if(A <= linearTolerance)
+    if(IsZero(A, linearTolerance))
         isLinear = true;
 
     if(isLinear)
-        result = SolveLinearEquation(B, C, roots);
+        result = SolveLinearEquation(B, C, linearTolerance, roots);
     else
-        result = SolveQuadraticEquation(A, B, C, roots, &isComplex);
+        result = SolveQuadraticEquation(A, B, C, linearTolerance, roots, &isComplex);
 
     /* Print roots of the equation */
-    if(printRoots)
+    if(printRoots && result == SUCCESS)
         PrintRoots(roots, isLinear, isComplex, linearTolerance);
 
     /* Return result */
@@ -241,9 +244,20 @@ SolveEquation(float coeff[], const int len, const float linearTolerance, const b
  * Function for solving linear equation
  */
  Result /* SUCCESS or any ERROR_CALC */
-SolveLinearEquation(const float k, const float b, float roots[])
+SolveLinearEquation(const float k, const float b, const float tolerance, float roots[])
 {
-    // TODO: Implementation
+    /* Root is zero */
+    roots[0] = 0.0f;
+
+    if(IsZero(b, tolerance))
+        return SUCCESS;
+    
+    if(IsZero(k, tolerance))
+        return ERROR_DIV_BY_ZERO;
+    
+    // TODO: Requires an assembler implementation
+    roots[0] = (-1 * b) / k;
+
     return SUCCESS;
 }
 
@@ -251,10 +265,53 @@ SolveLinearEquation(const float k, const float b, float roots[])
  * Function for solving quadratic equation
  */
  Result /* SUCCESS or any ERROR_CALC */
-SolveQuadraticEquation(const float a, const float b, const float c, float roots[], bool * isComplex)
+SolveQuadraticEquation(const float a, const float b, const float c, float tolerance, float roots[], bool * isComplex)
 {
-    // TODO: Implementation
-    return SUCCESS;
+    /* Division by zero error */
+    if(IsZero(a, tolerance))
+        return ERROR_DIV_BY_ZERO;
+
+    /* Flag of complex number */
+    *isComplex = false;
+
+    /* Roots is zero */
+    roots[0] = 0.0f;
+    roots[1] = 0.0f;
+
+    // TODO: Requires an assembler implementation
+    float discriminant = (b * b) - (4 * a * c);
+    float negativeB = -1 * b;
+    float twoA = 2 * a;
+
+    /* Discriminant is zero */
+    if(IsZero(discriminant, tolerance))
+    {     
+        roots[0] = negativeB / twoA;
+        roots[1] = roots[0];
+        return SUCCESS;
+    }
+
+    /* Discriminant is more zero */
+    if(discriminant > 0 && discriminant > tolerance)
+    {     
+        float sqrtDiscr = sqrtf(discriminant);
+        roots[0] = (negativeB + sqrtDiscr) / twoA;
+        roots[1] = (negativeB - sqrtDiscr) / twoA;
+        return SUCCESS;
+    }
+
+    /* Discriminant is less zero */
+    if(discriminant < 0 && -1 * discriminant > tolerance)
+    {      
+        *isComplex = true;
+        float sqrtDiscr = sqrtf(-1 * discriminant);
+        roots[0] = negativeB / twoA;
+        roots[1] = sqrtDiscr / twoA;
+        return SUCCESS;
+    }
+
+    /* Something went wrong */
+    return ERROR_CALC;
 }
 
 /* 
@@ -276,12 +333,33 @@ CloseProgram(Result result)
     if (result == ERROR_CALC)
         printf("Calculation error!\n");
 
+    if (result == ERROR_DIV_BY_ZERO)
+        printf("Division by zero error!\n");
+
 #ifdef WAIT_ANY_KEY
     /* Press any key for exit */
     PressAnyKey();
 #endif
 
     exit(result);
+}
+
+/*
+ * Function for comparing a number with zero
+ */
+ bool /* TRUE or FALSE */
+IsZero(const float number, const float tolerance)
+{
+    if(number == 0.0f)
+        return true;
+
+    if(number > 0 && number <= tolerance)
+        return true;
+
+    if(number < 0 && -1 * number <= tolerance)
+        return true;
+
+    return false;
 }
 
 /* 
@@ -309,7 +387,11 @@ PressAnyKey()
  void /* NULL */
 PrintIntro()
 {
-    // TODO: Print intro
+    printf("// =================================================\n");
+    printf("// Quadratic (Entertainment) Equation\n");
+    printf("// Shameless assembler in C. Just needs more speed.\n");
+    printf("// =================================================\n");
+    printf("\n");
 }
 
 /*

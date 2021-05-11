@@ -13,6 +13,7 @@ typedef enum
     ERROR_INPUT = 1,
     ERROR_OUTPUT = 2,
     ERROR_CALC = 3,
+    ERROR_DIV_BY_ZERO = 4,
 } Result;
 
 /* User input function */
@@ -31,15 +32,21 @@ Result PrintRoots(const float [], const bool, const bool, const float);
 Result SolveEquation(float [], const int, const float, const bool);
 
 /* Function for solving linear equation */
-Result SolveLinearEquation(const float, const float, float []);
+Result SolveLinearEquation(const float, const float, const float, float []);
 
 /* Function for solving quadratic equation */
-Result SolveQuadraticEquation(const float, const float, const float, float [], bool *);
+Result SolveQuadraticEquation(const float, const float, const float, const float, float [], bool *);
+
+/* Function for comparing a number with zero */
+bool IsZero(const float, const float);
 
 /* The function of closing the program with error handling */
 void CloseProgram(Result);
 
 /* The function waits for any key to be pressed */
 void PressAnyKey();
+
+/* The function outputs information about the program */
+void PrintIntro();
 
 #endif /* PROGRAM_H */
